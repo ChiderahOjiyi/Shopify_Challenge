@@ -1,0 +1,71 @@
+
+-- Question 2a
+--In order to see how many orders were shipped by Speedy Express we have to look at the Orders
+--tables first and then the Shippers table because we will be using a Join statement
+SELECT * FROM Orders;
+--In order to view the Orders table and we can see that there's a foreign key leading to the Shippers table
+SELECT * FROM Shippers;
+/*In order to view the Shippers table
+Then to get the values total orders that were shipped by Speedy Express in total we use
+a join statement*/
+SELECT
+    Count(*) As Total
+FROM Orders
+JOIN Shippers
+ON Orders.ShipperID = Shippers.ShipperID
+WHERE ShipperName = 'Speedy Express';
+--ANS = 54
+
+
+--Question 2b
+/*In order to see the last name of the employee with the most orders we have to look at the Orders
+tables first and then the Employees table because we will be using a Join statement*/
+SELECT * FROM Orders;
+/*In order to view the Orders table and we can see that there's a foreign key leading to the
+Employees table*/
+SELECT * FROM Employees;
+--In order to view the Employees table
+--Then to get the last name of the employee with the most orders
+SELECT
+    E.LastName,
+    Count(*) AS OrderCount
+FROM Orders AS O
+JOIN Employees AS E
+ON O.EmployeeID = E.EmployeeID
+Group by
+E.LastName
+Order by
+OrderCount DESC LIMIT 1
+--ANS = Peacock with an OrderCount of 40
+
+
+/*Question 2c
+In order to see what product was ordered the most by customers in Germany we will be using several join statements to join tables and also creating new view
+*/
+--First Step is to create a view from joining the Customers table with the Orders table
+Create View Customer_Orders As
+Select
+    C.CustomerID,
+    C.Country,
+    O.OrderID
+From Customers As C
+Join Orders As O
+On C.CustomerID = O.CustomerID
+Where C.Country = 'Germany'
+--Second Step is creating a view joining the previously created view with the OrderDetails Table
+Create View CO_OrDe As
+Select
+    *
+From Customer_Orders As CO
+Join OrderDetails As OrDe
+On CO.OrderID = OrDe.OrderID
+--And Finally to get the final solution
+Select
+    P.ProductName,
+    Sum(CO_OrDe.Quantity) As Total_Quantity
+From CO_OrDe
+Join Products As P
+On CO_OrDe.ProductID = P.ProductID
+Group by P.ProductName
+Order by Total_Quantity Desc Limit 1
+--Ans = ProductName is Boston Crab Meat and the Quantity is 160
